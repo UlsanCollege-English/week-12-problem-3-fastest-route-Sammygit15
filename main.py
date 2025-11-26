@@ -1,42 +1,46 @@
-
-## main.py
-```python
 import heapq
 
-
 def dijkstra_shortest_path(graph, start, goal):
-    """
-    Compute the shortest path in a graph with positive edge weights.
+    if start not in graph or goal not in graph:
+        return [], None
+    if start == goal:
+        return [start], 0
 
-    graph: dict mapping node -> list of (neighbor, weight) pairs.
-    start: starting node (string).
-    goal: target node (string).
+    dist = {node: float("inf") for node in graph}
+    dist[start] = 0
+    parent = {}
+    heap = [(0, start)]
 
-    Return:
-        (path, total_cost)
-        - path: list of nodes from start to goal with minimum total weight
-        - total_cost: sum of weights along the path
-        If start/goal is not in graph or goal is unreachable, return ([], None).
-    """
-    # TODO Step 1: Briefly write what this function should compute.
-    # TODO Step 2: Re-phrase the problem in simple English in a comment.
-    # TODO Step 3: Identify inputs, outputs, and main structures (dist, parent, heap).
-    # TODO Step 4: Plan Dijkstra: how to update distances and parents.
-    # TODO Step 5: Write pseudocode for Dijkstra using a priority queue (heap).
-    # TODO Step 6: Translate your pseudocode into Python with heapq.
-    # TODO Step 7: Test with small graphs where you know the correct answer.
-    # TODO Step 8: Check that your solution's complexity is about O((V + E) log V).
+    while heap:
+        current_dist, node = heapq.heappop(heap)
+        if current_dist > dist[node]:
+            continue
+        for neighbor, weight in graph[node]:
+            if dist[node] + weight < dist[neighbor]:
+                dist[neighbor] = dist[node] + weight
+                parent[neighbor] = node
+                heapq.heappush(heap, (dist[neighbor], neighbor))
 
-    raise NotImplementedError("dijkstra_shortest_path is not implemented yet")
+    if goal not in parent and start != goal:
+        return [], None
+
+    # Reconstruct path
+    path = [goal]
+    while path[-1] != start:
+        path.append(parent[path[-1]])
+    path.reverse()
+    return path, dist[goal]
 
 
 if __name__ == "__main__":
-    # Optional quick check
+    # Demo graph matching the test file weights exactly
     sample_graph = {
-        "K1": [("K2", 5), ("K3", 2)],
-        "K2": [("K1", 5), ("K4", 4)],
-        "K3": [("K1", 2), ("K4", 7)],
-        "K4": [("K2", 4), ("K3", 7)],
+        "Start": [("A", 2), ("B", 5)],
+        "A": [("Start", 2), ("C", 1)],
+        "B": [("Start", 5), ("C", 3), ("D", 7)],
+        "C": [("A", 1), ("B", 3), ("End", 2)],
+        "D": [("B", 7), ("End", 1)],
+        "End": [("C", 2), ("D", 1)],
     }
-    path, cost = dijkstra_shortest_path(sample_graph, "K1", "K4")
-    print("Sample path from K1 to K4:", path, "cost:", cost)
+    path, cost = dijkstra_shortest_path(sample_graph, "Start", "End")
+    print("Sample path from Start to End:", path, "cost:", cost)
